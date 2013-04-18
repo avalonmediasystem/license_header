@@ -13,12 +13,12 @@ module LicenseHeader
   # Only :each is required; if the other two are not provided they will be
   # ignored
   LANGUAGE_SYNTAX = { 
-    :css        => { :pre => '/* ',  :each => ' * ', :post => '*/',  :exts => %w(.css .scss)        },
-    :erb        => { :pre => '<%#',  :each => '',    :post => '%>',  :exts => %w(.erb)              },
-    :haml       => { :pre => '-#',   :each => '  ',                  :exts => %w(.haml)             },
-    :html       => { :pre => '<!--', :each => '',    :post => '-->', :exts => %w(.html)             },
-    :javascript => { :pre => '/* ',  :each => ' * ', :post => '*/',  :exts => %w(.js .json)         },
-    :ruby       => {                 :each => '# ',                  :exts => %w(.rb .rake .coffee) },
+    :css        => { :pre => '/* ',  :each => ' * ', :post => '*/',  :exts => %w(.css .scss)            },
+    :erb        => { :pre => '<%#',  :each => '',    :post => '%>',  :exts => %w(.erb)                  },
+    :haml       => { :pre => '-#',   :each => '  ',                  :exts => %w(.haml)                 },
+    :html       => { :pre => '<!--', :each => '',    :post => '-->', :exts => %w(.html)                 },
+    :javascript => { :pre => '/* ',  :each => ' * ', :post => '*/',  :exts => %w(.js .json)             },
+    :ruby       => {                 :each => '# ',                  :exts => %w(.rb .rake .coffee .pp) },
   }
 
   class Auditor
@@ -59,7 +59,7 @@ module LicenseHeader
       else
         file_content = read_file(path)
         header_content = format[:header]
-        index = file_content.find_index { |l| l =~ /---  [E]ND AVALON LICENSE BLOCK  ---/ }
+        index = file_content.find_index { |l| l =~ /---  [E]ND LICENSE_HEADER BLOCK  ---/ }
         if index.nil?
           :missing
         else
@@ -92,7 +92,7 @@ module LicenseHeader
     end
 
     def remove_license!(source_file, format)
-      end_of_license = source_file.find_index { |l| l =~ /---  [E]ND AVALON LICENSE BLOCK  ---/ }
+      end_of_license = source_file.find_index { |l| l =~ /---  [E]ND LICENSE_HEADER BLOCK  ---/ }
       if end_of_license.nil?
         return false
       else
@@ -131,9 +131,9 @@ module LicenseHeader
       @headers.each_pair do |lang,syntax|
         syntax[:header] = []
         syntax[:header] << syntax[:pre] unless syntax[:pre].nil?
-        syntax[:header] << "#{syntax[:each]} --- BEGIN AVALON LICENSE BLOCK ---"
+        syntax[:header] << "#{syntax[:each]}--- BEGIN LICENSE_HEADER BLOCK ---"
         syntax[:header] += license_terms.collect {|line| syntax[:each] + line }
-        syntax[:header] << "#{syntax[:each]} ---  #{'E'}ND AVALON LICENSE BLOCK  ---"
+        syntax[:header] << "#{syntax[:each]}---  #{'E'}ND LICENSE_HEADER BLOCK  ---"
         syntax[:header] << syntax[:post] unless syntax[:post].nil?
         syntax[:header] << ""
       end
