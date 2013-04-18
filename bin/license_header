@@ -1,0 +1,107 @@
+#!/usr/bin/env ruby
+
+require 'license_header'
+require 'optparse'
+require 'highline/import'
+
+command = nil
+options = { :exceptions => [] }
+
+@prompt = true
+def getYyn(text)
+  if @prompt
+    response = ask("#{text} (Y/y/n) ") { |q| 
+      q.overwrite = true
+      q.echo = true
+      q.character = true
+      q.validate { |r| r =~ /^[Yyn]$/ } 
+    }
+    if response == 'Y'
+      @prompt = false
+    end
+    return response.downcase == 'y'
+  else
+    return true
+  end
+end
+
+opts = OptionParser.new do |opts|
+  opts.banner = "Usage: #{File.basename $0} <action> [options] <filespec>"
+
+  opts.separator 'Actions:'
+
+  opts.on('-a', '--audit', "Print a list of files needing license updates") do
+    command = :audit
+  end
+
+  opts.on('-u', '--update', "Update files requiring license headers") do
+    command = :update
+  end
+
+  opts.on('-r', '--remove', "Remove license headers from files") do
+    command = :remove
+  end
+
+  opts.separator 'Common options:'
+
+  opts.on('-f FILE', '--header-file=FILE', "File containing header text") do |arg|
+    options[:header] = arg
+  end
+
+  opts.on('-x MASK', '--exclude=MASK', "Exclude pattern") do |arg|
+    pattern = Regexp.escape(arg).gsub('\*','.*?')
+    re = /^#{pattern}$/i
+    options[:exceptions] << re
+  end
+
+  opts.on('-y', '--yes', "Assume yes reponses to all prompts") do
+    @prompt = false
+  end
+
+  opts.on('-v', '--verbose', "Run verbosely") do
+    options[:verbose] = true
+  end
+
+  opts.on_tail('-h', '--help', "Show this message") do
+    puts opts
+    exit
+  end
+end
+opts.parse!
+
+if command.nil? or options[:header].nil? or ARGV.empty?
+  puts opts
+  exit
+end
+
+targets = ARGV.collect do |spec|
+  File.directory?(spec) ? File.join(spec,"**","*") : spec
+end
+
+auditor = LicenseHeader::Auditor.new(options)
+files = auditor.audit(*targets)
+invalid = (files[:missing]+files[:invalid]).sort
+present = (files[:present]+files[:valid]).sort
+case command
+when :audit
+  $stderr.puts "#{files[:valid].length} files have correct headers"
+  $stderr.puts files[:valid].join("\n") if options[:verbose]
+  $stderr.puts "#{files[:missing].length} files have missing headers"
+  $stderr.puts files[:missing].join("\n") if options[:verbose]
+  $stderr.puts "#{files[:invalid].length} files have invalid headers"
+  $stderr.puts files[:invalid].join("\n") if options[:verbose]
+when :update
+  $stderr.puts "#{invalid.length} files have missing or incorrect headers"
+  auditor.process_files(:update, *  invalid) do |file, format|
+    response = getYyn("Update header in #{file}?")
+    $stderr.puts "Updating #{file}..." if response
+    response
+  end
+when :remove
+  $stderr.puts "#{present.length} files have headers"
+  auditor.process_files(:remove, *present) do |file, format|
+    response = getYyn("Remove header from #{file}?")
+    $stderr.puts "Cleaning up #{file}..." if response
+    response
+  end
+end
