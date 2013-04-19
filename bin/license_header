@@ -50,7 +50,7 @@ opts = OptionParser.new do |opts|
 
   opts.on('-x MASK', '--exclude=MASK', "Exclude pattern") do |arg|
     pattern = Regexp.escape(arg).gsub('\*','.*?')
-    re = /^#{pattern}$/i
+    re = %r{^#{pattern}$}i
     options[:exceptions] << re
   end
 
@@ -80,16 +80,16 @@ end
 
 auditor = LicenseHeader::Auditor.new(options)
 files = auditor.audit(*targets)
-invalid = (files[:missing]+files[:invalid]).sort
+invalid = (files[:missing]+files[:present]).sort
 present = (files[:present]+files[:valid]).sort
 case command
 when :audit
-  $stderr.puts "#{files[:valid].length} files have correct headers"
-  $stderr.puts files[:valid].join("\n") if options[:verbose]
-  $stderr.puts "#{files[:missing].length} files have missing headers"
+  $stderr.puts "#{files[:missing].length} files are missing headers"
   $stderr.puts files[:missing].join("\n") if options[:verbose]
-  $stderr.puts "#{files[:invalid].length} files have invalid headers"
-  $stderr.puts files[:invalid].join("\n") if options[:verbose]
+  $stderr.puts "#{files[:valid].length} files have valid headers"
+  $stderr.puts files[:valid].join("\n") if options[:verbose]
+  $stderr.puts "#{files[:present].length} files have invalid headers"
+  $stderr.puts files[:present].join("\n") if options[:verbose]
 when :update
   if options[:header].nil?
     put opts
