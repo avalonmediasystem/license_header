@@ -4,21 +4,23 @@ require 'fileutils'
 # block as a header.
 
 module LicenseHeader
-  # For each language you can define three variables
+  # For each language you can define five variables
   #
   # :pre will be prepended to the header
   # :each will be prepended to each line of the header
   # :post will be appended to the end of the file
+  # :sep determines whether an empty line should separate the header from the body
+  # :exts lists the extensions the syntax will apply to
   #
   # Only :each is required; if the other two are not provided they will be
   # ignored
   LANGUAGE_SYNTAX = { 
-    :css        => { :pre => '/* ',  :each => ' * ', :post => '*/',  :exts => %w(.css .scss)            },
-    :erb        => { :pre => '<%#',  :each => '',    :post => '%>',  :exts => %w(.erb)                  },
-    :haml       => { :pre => '-#',   :each => '  ',                  :exts => %w(.haml)                 },
-    :html       => { :pre => '<!--', :each => '',    :post => '-->', :exts => %w(.html)                 },
-    :javascript => { :pre => '/* ',  :each => ' * ', :post => '*/',  :exts => %w(.js .json)             },
-    :ruby       => {                 :each => '# ',                  :exts => %w(.rb .rake .coffee .pp) },
+    :css        => { :pre => '/* ',  :each => ' * ', :post => '*/',  :sep => true,  :exts => %w(.css .scss)            },
+    :erb        => { :pre => '<%#',  :each => '',    :post => '%>',  :sep => false, :exts => %w(.erb)                  },
+    :haml       => { :pre => '-#',   :each => '  ',                  :sep => true,  :exts => %w(.haml)                 },
+    :html       => { :pre => '<!--', :each => '',    :post => '-->', :sep => false, :exts => %w(.html)                 },
+    :javascript => { :pre => '/* ',  :each => ' * ', :post => '*/',  :sep => true,  :exts => %w(.js .json)             },
+    :ruby       => {                 :each => '# ',                  :sep => true,  :exts => %w(.rb .rake .coffee .pp) },
   }
 
   class Auditor
@@ -96,8 +98,9 @@ module LicenseHeader
       if end_of_license.nil?
         return false
       else
-        extra_lines = format[:post].nil? ? 1 : 2
-        source_file.shift(end_of_license+extra_lines+1)
+        end_of_license += 1 if format[:post]
+        end_of_license += 1 if format[:sep]
+        source_file.shift(end_of_license+1)
         return true
       end
     end
@@ -123,19 +126,18 @@ module LicenseHeader
     # Javascript that uses /* */ syntax
     def initialize_headers
       @headers = LANGUAGE_SYNTAX.clone
-      base = File.read(@header)
+      base = File.read(@header) rescue nil
       # Break each line down so we can do easy manipulation to create our new
       # versions
-      license_terms = base.split(/\n/)
+      license_terms = base.nil? ? [] : base.split(/\n/)
 
       @headers.each_pair do |lang,syntax|
         syntax[:header] = []
         syntax[:header] << syntax[:pre] unless syntax[:pre].nil?
-        syntax[:header] << "#{syntax[:each]}--- BEGIN LICENSE_HEADER BLOCK ---"
         syntax[:header] += license_terms.collect {|line| syntax[:each] + line }
         syntax[:header] << "#{syntax[:each]}---  #{'E'}ND LICENSE_HEADER BLOCK  ---"
         syntax[:header] << syntax[:post] unless syntax[:post].nil?
-        syntax[:header] << ""
+        syntax[:header] << "" if syntax[:sep]
       end
     end
   end

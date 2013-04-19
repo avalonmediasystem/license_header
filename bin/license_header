@@ -64,14 +64,14 @@ opts = OptionParser.new do |opts|
 
   opts.on_tail('-h', '--help', "Show this message") do
     puts opts
-    exit
+    exit 1
   end
 end
 opts.parse!
 
-if command.nil? or options[:header].nil? or ARGV.empty?
+if command.nil? or ARGV.empty?
   puts opts
-  exit
+  exit 1
 end
 
 targets = ARGV.collect do |spec|
@@ -91,6 +91,10 @@ when :audit
   $stderr.puts "#{files[:invalid].length} files have invalid headers"
   $stderr.puts files[:invalid].join("\n") if options[:verbose]
 when :update
+  if options[:header].nil?
+    put opts
+    exit 1
+  end
   $stderr.puts "#{invalid.length} files have missing or incorrect headers"
   auditor.process_files(:update, *  invalid) do |file, format|
     response = getYyn("Update header in #{file}?")
