@@ -10,7 +10,8 @@ Gem::Specification.new do |spec|
   spec.email         = ["rogersna@indiana.edu"]
   spec.description   = %q{License header block auditing/updating}
   spec.summary       = %q{This gem will assist in making sure that all files have the right license block as a header.}
-
+  spec.license       = 'Apache 2.0'
+  
   spec.files         = Dir["lib/**/*"] + Dir["bin/**/*"] + ["README.md"]
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
