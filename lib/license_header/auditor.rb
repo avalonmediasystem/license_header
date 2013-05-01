@@ -20,6 +20,7 @@ module LicenseHeader
     :haml       => { :pre => '-#',   :each => '  ',                  :sep => true,  :exts => %w(.haml)                 },
     :as         => { :pre => '/* ',  :each => ' * ', :post => '*/',  :sep => true,  :exts => %w(.as)                   },
     :html       => { :pre => '<!--', :each => '',    :post => '-->', :sep => false, :exts => %w(.html)                 },
+    :htm        => { :pre => '<!--', :each => '',    :post => '-->', :sep => false, :exts => %w(.htm)                  },
     :java       => { :pre => '/* ',  :each => ' * ', :post => '*/',  :sep => true,  :exts => %w(.java)                 },
     :javascript => { :pre => '/* ',  :each => ' * ', :post => '*/',  :sep => true,  :exts => %w(.js .json)             },
     :ruby       => {                 :each => '# ',                  :sep => true,  :exts => %w(.rb .rake .coffee .pp) },

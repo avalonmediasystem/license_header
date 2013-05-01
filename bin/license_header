@@ -75,6 +75,7 @@ begin
 rescue EOFError, Errno::EWOULDBLOCK
 end
 required_files = piped_text.split("\n")
+@prompt = false if ! required_files.empty?
 
 if command.nil? or  ( ARGV.empty? and required_files.empty? )
   puts opts
