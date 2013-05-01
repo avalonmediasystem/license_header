@@ -18,7 +18,9 @@ module LicenseHeader
     :css        => { :pre => '/* ',  :each => ' * ', :post => '*/',  :sep => true,  :exts => %w(.css .scss)            },
     :erb        => { :pre => '<%#',  :each => '',    :post => '%>',  :sep => false, :exts => %w(.erb)                  },
     :haml       => { :pre => '-#',   :each => '  ',                  :sep => true,  :exts => %w(.haml)                 },
+    :as         => { :pre => '/* ',  :each => ' * ', :post => '*/',  :sep => true,  :exts => %w(.as)                   },
     :html       => { :pre => '<!--', :each => '',    :post => '-->', :sep => false, :exts => %w(.html)                 },
+    :java       => { :pre => '/* ',  :each => ' * ', :post => '*/',  :sep => true,  :exts => %w(.java)                 },
     :javascript => { :pre => '/* ',  :each => ' * ', :post => '*/',  :sep => true,  :exts => %w(.js .json)             },
     :ruby       => {                 :each => '# ',                  :sep => true,  :exts => %w(.rb .rake .coffee .pp) },
   }
@@ -36,7 +38,7 @@ module LicenseHeader
     end
 
     # Create a list of all files grouped by type and return the map
-    def audit(*patterns)
+    def audit(patterns, files = [])
       result = Hash.new { |h,k| h[k] = [] }
 
       Dir.glob(patterns).each do |entry|
@@ -51,6 +53,11 @@ module LicenseHeader
         format = determine_format(entry)
         result[evaluate_header(entry, format)] << entry
       end
+
+      files.each do |entry|
+        format = determine_format(entry)
+        result[evaluate_header(entry, format)] << entry
+      end if files
 
       return result
     end
@@ -112,7 +119,7 @@ module LicenseHeader
     end
 
     def read_file(file)
-      File.read(file).chomp.split(/\n/)
+      File.read(file).encode!('UTF-8', 'UTF-8', :invalid => :replace).chomp.split(/\n/)
     end
 
     def write_file(file, content)
