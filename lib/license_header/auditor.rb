@@ -134,7 +134,7 @@ module LicenseHeader
       @headers.each_pair do |lang,syntax|
         syntax[:header] = []
         syntax[:header] << syntax[:pre] unless syntax[:pre].nil?
-        syntax[:header] += license_terms.collect {|line| syntax[:each] + line }
+        syntax[:header] += license_terms.collect {|line| (syntax[:each] + line).rstrip }
         syntax[:header] << "#{syntax[:each]}---  #{'E'}ND LICENSE_HEADER BLOCK  ---"
         syntax[:header] << syntax[:post] unless syntax[:post].nil?
         syntax[:header] << "" if syntax[:sep]
