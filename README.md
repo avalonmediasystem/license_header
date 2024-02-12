@@ -29,5 +29,5 @@ bundle exec license_header -a app/ db/ lib/ script/ spec/
 ```
 When you're ready to add/update headers run the update action:
 ```
-bundle exec license_header -u app/ db/ lib/ script/ spec/
+bundle exec license_header -u app/ db/ lib/ script/ spec/ -f FILE
 ```
