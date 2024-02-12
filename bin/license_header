@@ -92,7 +92,7 @@ when :audit
   $stderr.puts files[:present].join("\n") if options[:verbose]
 when :update
   if options[:header].nil?
-    put opts
+    puts opts
     exit 1
   end
   $stderr.puts "#{invalid.length} files have missing or incorrect headers"
