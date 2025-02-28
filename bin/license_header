@@ -69,7 +69,15 @@ opts = OptionParser.new do |opts|
 end
 opts.parse!
 
-if command.nil? or ARGV.empty?
+begin
+  piped_text = ''
+  piped_text += $stdin.read_nonblock(4096) while 1 
+rescue EOFError, Errno::EWOULDBLOCK
+end
+required_files = piped_text.split("\n")
+@prompt = false if ! required_files.empty?
+
+if command.nil? or  ( ARGV.empty? and required_files.empty? )
   puts opts
   exit 1
 end
@@ -79,7 +87,7 @@ targets = ARGV.collect do |spec|
 end
 
 auditor = LicenseHeader::Auditor.new(options)
-files = auditor.audit(*targets)
+files = auditor.audit(targets, required_files)
 invalid = (files[:missing]+files[:present]).sort
 present = (files[:present]+files[:valid]).sort
 case command
